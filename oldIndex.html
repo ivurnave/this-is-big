@@ -9,27 +9,18 @@
 
         <!-- Loading javascript files -->
         <script src="phaser.min.js"></script>
-        <script src="js/play.js"></script>
-        <script src="js/win.js"></script>
+        <!-- <script src="js/play.js"></script> -->
+        <!-- <script src="js/win.js"></script> -->
+        <!-- <script src="js/game.js"></script> -->
+        <script src="js/backup.js"></script>
 
         <style>
             canvas {
                 margin: 0 auto;
             }
         </style>
-        
     </head>
     <body>
         <div id="gameDiv" style:"align-content: center"> </div>
-        <script type="text/javascript">
-            // Create game, states, start at the play state.
-            window.onload = function () {
-                var game = new Phaser.Game(800, 600, Phaser.AUTO, 'gameDiv');
-                game.state.add('Play', play);
-                game.state.add('Win', win);
-    
-                game.state.start('Play');
-            }
-        </script>
     </body>
 </html>
