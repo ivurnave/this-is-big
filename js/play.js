@@ -14,18 +14,22 @@ function Player (game, x, y, playerNum) {
     Phaser.Sprite.call(this, game, x, y, 'snail');
     this.arm = new Arm(this.game, this.x, this.y, this.playerNum);
     this.game.add.existing(this.arm);
-    // Phaser.Sprite.call(this, game, x, y, 'arm');
     this.anchor.set(0.5, 0.5);
+    // set physics for object
+    this.game.physics.enable(this);
     if (playerNum === 1) {
         this.scale.setTo(-pixelscale, pixelscale);    
+        this.body.acceleration.setTo(40,0);
     } else {
         this.scale.setTo(pixelscale, pixelscale);
+        this.body.acceleration.setTo(-40,0);
     }
-
+    
 }
 
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
+
 Player.prototype.jab = function (key) {
     // TODO
 }
@@ -39,6 +43,9 @@ function Arm (game, x, y, playerNum) {
     }
     this.anchor.setTo(.5,.5);
     this.scale.setTo(3,1.5);
+
+    // enable physics for arm
+    this.game.physics.enable(this);
 }
 Arm.prototype = Object.create(Phaser.Sprite.prototype);
 Arm.prototype.constructor = Arm;
@@ -68,10 +75,15 @@ play.prototype = {
 
         //set background
         this.game.stage.backgroundColor = '70caff';
-    },
 
+    },
+    
     create: function () {
         console.log('create');
+        
+        // start physics
+        this.game.physics.startSystem(Phaser.Physics.ARCADE);
+
         p1 = new Player(
             this.game,
             this.game.world.centerX-300,
@@ -80,7 +92,7 @@ play.prototype = {
         );
         this.game.add.existing(p1);
         p1jab.onDown.add(jab, this);
-
+        
         p2 = new Player(
             this.game,
             this.game.world.centerX+300,
@@ -88,23 +100,37 @@ play.prototype = {
             2 // player num
         );
         this.game.add.existing(p2);
-
-        // check stufffff
+        
 
     },
 
     update: function () {
         // TODO
         handleInputs();
+        // console.log(this.game);
+        handleCollisions(this.game);
         if (jabDelay) {
             jabDelay--;
         }
+    },
+
+    // Use this function to look at the hit-boxes
+    render: function () {
+        this.game.debug.body(p1);
+        // this.game.debug.body(p1.arm);
     }
 }
 
 handleInputs = function () {
     if (p1up.isDown) {
         console.log("p1up is pressed");
+    }
+}
+
+handleCollisions = function (game) {
+    // TODO
+    if (game.physics.arcade.collide(p1, p2)) {
+        p1.body.acceleration = p2.body.acceleration = 0;
     }
 }
 
