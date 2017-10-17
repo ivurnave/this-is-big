@@ -11,9 +11,11 @@ var pixelscale = 2;
 
 // A player object
 function Player (game, x, y, playerNum) {
+    // instance variables
+    this.num = playerNum;
+    this.jabDelay = 0;
     Phaser.Sprite.call(this, game, x, y, 'snail');
     this.anchor.set(0.5, 0.5);
-    this.num = playerNum;
     this.game.physics.enable(this); // set physics for player
     if (playerNum === 1) {
         this.arm = new Arm(this.game, this.x+70, this.y, this.playerNum);
@@ -33,15 +35,32 @@ Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
     this.arm.body.velocity = this.body.velocity;
-    if (this.num === 1)
+    if (this.num === 1 && !this.jabDelay) {
         this.arm.x = this.x+70;
-    else {
+    } else if (this.num === 2 && !this.jabDelay) {
         this.arm.x = this.x-70;
     }
-}
+    
+    if (this.jabDelay) {
+        this.jabDelay--;
+        if (this.num === 1) {
+            this.arm.x--;
+        } else {
+            this.arm.x++;
+        }
+    }
 
-Player.prototype.jab = function (key) {
-    // TODO
+    // Testing
+}
+Player.prototype.jab = function () {
+    if (this.jabDelay > 0) {return;}
+    if (this.num === 1) {
+        this.arm.x += 60;
+    } else {
+        // console.log("p2 jab");
+        this.arm.x -= 60;
+    }
+    this.jabDelay = 60;
 }
 
 // An arm object, to be a child of the player object
@@ -95,7 +114,7 @@ play.prototype = {
             1 // player num
         );
         this.game.add.existing(p1);
-        p1jab.onDown.add(jab, this);
+        p1jab.onDown.add(p1.jab, p1);
         
         p2 = new Player(
             this.game,
@@ -104,19 +123,14 @@ play.prototype = {
             2 // player num
         );
         this.game.add.existing(p2);
-        
+        p2jab.onDown.add(p2.jab, p2);
 
     },
     
     // Called every frame of the game (I think 30 fps?)
     update: function () {
-        // TODO
         this.handleInputs();
         this.handleCollisions();
-        // This ought to get put inside the player code, not out here!
-        if (jabDelay) {
-            jabDelay--;
-        }
     },
     
     // Use this function to look at the hit-boxes
@@ -129,12 +143,14 @@ play.prototype = {
 
     // Handle inputs for the players
     handleInputs: function () {
+        // p1 inputs
         if (p1up.isDown && p1.arm.y > (p1.y - 30)) {
             p1.arm.y -= 3;
         } else if (p1down.isDown && p1.arm.y < (p1.y + 30)) {
             p1.arm.y += 3;
         }
 
+        // p2 inputs
         if (p2up.isDown && p2.arm.y > (p2.y - 30)) {
             p2.arm.y -= 3;
         } else if (p2down.isDown && p2.arm.y < (p2.y + 30)) {
@@ -148,27 +164,24 @@ play.prototype = {
 
     handleCollisions: function () {
         // TODO
-        // console.log(p1.arm);
-        // console.log(p2.arm);
-        // console.log(this);
         if (this.game.physics.arcade.collide(p1, p2)) {
-            // p1.body.acceleration = p2.body.acceleration = 0;
             this.game.paused = true;
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
-        if (this.game.physics.arcade.collide(p1.arm, p2.arm)) {
+        if (this.game.physics.arcade.overlap(p1.arm, p2.arm)) {
             console.log('clang');
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
+
+        if (this.game.physics.arcade.overlap(p1.arm, p2)) {
+            console.log('Player 1 wins!');
+            this.game.paused = true;
+        }
+        if (this.game.physics.arcade.overlap(p2.arm, p1)) {
+            console.log('Player 2 wins!');
+            this.game.paused = true;
+        }
     }
-}
-
-
-
-function jab () {
-    if (jabDelay > 0) {return;}
-    console.log("Jab!");
-    jabDelay = 60;
 }
