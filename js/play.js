@@ -28,12 +28,12 @@ function Player (game, x, y, playerNum) {
         this.scale.setTo(pixelscale, pixelscale);
         this.body.acceleration.setTo(-40,0);
     }
-    
 }
 
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
+    // Update arm velocity
     this.arm.body.velocity = this.body.velocity;
     if (this.num === 1 && !this.jabDelay) {
         this.arm.x = this.x+70;
@@ -41,6 +41,7 @@ Player.prototype.update = function () {
         this.arm.x = this.x-70;
     }
     
+    // Hnadle jab delay
     if (this.jabDelay) {
         this.jabDelay--;
         if (this.num === 1) {
@@ -49,15 +50,12 @@ Player.prototype.update = function () {
             this.arm.x++;
         }
     }
-
-    // Testing
 }
 Player.prototype.jab = function () {
     if (this.jabDelay > 0) {return;}
     if (this.num === 1) {
         this.arm.x += 60;
     } else {
-        // console.log("p2 jab");
         this.arm.x -= 60;
     }
     this.jabDelay = 60;
@@ -94,10 +92,10 @@ play.prototype = {
         p1jab = this.game.input.keyboard.addKey(Phaser.Keyboard.D);
         p2up = this.game.input.keyboard.addKey(Phaser.Keyboard.I);
         p2down = this.game.input.keyboard.addKey(Phaser.Keyboard.K);
-        p2jab = this.game.input.keyboard.addKey(Phaser.Keyboard.L);
+        p2jab = this.game.input.keyboard.addKey(Phaser.Keyboard.J);
 
         //set background
-        this.game.stage.backgroundColor = '70caff';
+        this.game.stage.backgroundColor = '#e5d195';
 
     },
     
@@ -134,11 +132,60 @@ play.prototype = {
     },
     
     // Use this function to look at the hit-boxes
+    // Use for drawing the arms!
     render: function () {
+        // Hitboxes
         // this.game.debug.body(p1);
         // this.game.debug.body(p1.arm);
         // this.game.debug.body(p2);
         // this.game.debug.body(p2.arm);
+
+        // Player 1 arm
+        this.game.context.strokeStyle = '#75bfea';
+        this.game.context.lineWidth = 8;
+        this.game.context.beginPath();
+        this.game.context.moveTo(p1.x, p1.y);
+        this.game.context.lineTo(p1.arm.x, p1.arm.y);
+        this.game.context.stroke();
+        this.game.context.closePath();
+        // shoulder
+        this.game.context.fillStyle = '#a35c44';
+        this.game.context.beginPath();
+        this.game.context.moveTo(p1.x, p1.y);
+        this.game.context.arc(p1.x, p1.y, 10, 2 * Math.PI, false);
+        this.game.context.fill();
+        this.game.context.closePath();
+        // hand
+        this.game.context.fillStyle = '#a35c44';
+        this.game.context.beginPath();
+        this.game.context.moveTo(p1.x, p1.y);
+        this.game.context.arc(p1.arm.x, p1.arm.y, 5, 2 * Math.PI, false);
+        this.game.context.fill();
+        this.game.context.closePath();
+
+
+        // Player 2 arm
+        this.game.context.strokeStyle = '#75bfea';
+        this.game.context.lineWidth = 10;
+        this.game.context.beginPath();
+        this.game.context.moveTo(p2.x, p2.y);
+        this.game.context.lineTo(p2.arm.x, p2.arm.y);
+        this.game.context.stroke();
+        this.game.context.closePath();
+        // shoulder
+        this.game.context.fillStyle = '#a35c44';
+        this.game.context.beginPath();
+        this.game.context.moveTo(p2.x, p2.y);
+        this.game.context.arc(p2.x, p2.y, 10, 2 * Math.PI, false);
+        this.game.context.fill();
+        this.game.context.closePath();
+        // hand
+        this.game.context.fillStyle = '#a35c44';
+        this.game.context.beginPath();
+        this.game.context.moveTo(p2.x, p2.y);
+        this.game.context.arc(p2.arm.x, p2.arm.y, 5, 2 * Math.PI, false);
+        this.game.context.fill();
+        this.game.context.closePath();
     },
 
     // Handle inputs for the players
@@ -156,14 +203,9 @@ play.prototype = {
         } else if (p2down.isDown && p2.arm.y < (p2.y + 30)) {
             p2.arm.y += 3;
         }
-
-    
-        // Testing
-
     },
 
     handleCollisions: function () {
-        // TODO
         if (this.game.physics.arcade.collide(p1, p2)) {
             this.game.paused = true;
             p1.body.velocity.x = -bounceback;
