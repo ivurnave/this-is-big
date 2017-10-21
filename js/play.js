@@ -1,4 +1,4 @@
-// Decalre the play state
+// Declare the play state
 var play = function (game) {};
 
 // Global variables for play state
@@ -9,6 +9,8 @@ var p1up, p1down, p1jab, p2up, p2down, p2jab;
 
 var pixelscale = 2;
 
+var resetButton;
+
 // A player object
 function Player (game, x, y, playerNum) {
     // instance variables
@@ -18,13 +20,13 @@ function Player (game, x, y, playerNum) {
     this.anchor.set(0.5, 0.5);
     this.game.physics.enable(this); // set physics for player
     if (playerNum === 1) {
-        this.arm = new Arm(this.game, this.x+70, this.y, this.playerNum);
-        this.game.add.existing(this.arm);
+        this.sword = new Sword(this.game, this.x+70, this.y, this.playerNum);
+        this.game.add.existing(this.sword);
         this.scale.setTo(-pixelscale, pixelscale);    
         this.body.acceleration.setTo(40,0);
     } else {
-        this.arm = new Arm(this.game, this.x-70, this.y, this.playerNum);
-        this.game.add.existing(this.arm);
+        this.sword = new Sword(this.game, this.x-70, this.y, this.playerNum);
+        this.game.add.existing(this.sword);
         this.scale.setTo(pixelscale, pixelscale);
         this.body.acceleration.setTo(-40,0);
     }
@@ -33,43 +35,43 @@ function Player (game, x, y, playerNum) {
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
-    // Update arm velocity
-    this.arm.body.velocity = this.body.velocity;
+    // Update sword velocity
+    this.sword.body.velocity = this.body.velocity;
     if (this.num === 1 && !this.jabDelay) {
-        this.arm.x = this.x+70;
+        this.sword.x = this.x+70;
     } else if (this.num === 2 && !this.jabDelay) {
-        this.arm.x = this.x-70;
+        this.sword.x = this.x-70;
     }
     
-    // Hnadle jab delay
+    // Handle jab delay
     if (this.jabDelay) {
         this.jabDelay--;
         if (this.num === 1) {
-            this.arm.x--;
+            this.sword.x--;
         } else {
-            this.arm.x++;
+            this.sword.x++;
         }
     }
 }
 Player.prototype.jab = function () {
     if (this.jabDelay > 0) {return;}
     if (this.num === 1) {
-        this.arm.x += 60;
+        this.sword.x += 60;
     } else {
-        this.arm.x -= 60;
+        this.sword.x -= 60;
     }
     this.jabDelay = 60;
 }
 
-// An arm object, to be a child of the player object
-function Arm (game, x, y, playerNum) {
-    Phaser.Sprite.call(this, game, x, y, 'arm');
-    this.game.physics.enable(this); // enable physics for arm
+// An sword object, to be a child of the player object
+function Sword (game, x, y, playerNum) {
+    Phaser.Sprite.call(this, game, x, y, 'sword');
+    this.game.physics.enable(this); // enable physics for sword
     this.anchor.setTo(.5,.5);
     this.scale.setTo(3,1.5);
 }
-Arm.prototype = Object.create(Phaser.Sprite.prototype);
-Arm.prototype.constructor = Arm;
+Sword.prototype = Object.create(Phaser.Sprite.prototype);
+Sword.prototype.constructor = Sword;
 
 
 play.prototype = {
@@ -78,7 +80,8 @@ play.prototype = {
         console.log('preload');
         this.game.load.image('snail', 'images/snail.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
-        this.game.load.image('arm', 'images/arm.png');
+        this.game.load.image('sword', 'images/arm.png');
+        this.game.load.image('button', 'images/arm.png');
         this.game.stage.smoothed = false;
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
@@ -105,6 +108,7 @@ play.prototype = {
         // start physics
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
+        // Create players
         p1 = new Player(
             this.game,
             this.game.world.centerX-300,
@@ -123,9 +127,17 @@ play.prototype = {
         this.game.add.existing(p2);
         p2jab.onDown.add(p2.jab, p2);
 
+        // Create reset button
+        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-100, 'button', this.restart);
+        // this.game.add.existing(resetButton);
+        // resetButton = this.game.add.button(this.game, this.game.world.centerX, this.game.world.centerY-100, 'button',
+        //     function () {
+        //         console.log('hey');
+        //     });
+
     },
     
-    // Called every frame of the game (I think 30 fps?)
+    // Called every frame of the game (I think 60 fps?)
     update: function () {
         this.handleInputs();
         this.handleCollisions();
@@ -135,17 +147,17 @@ play.prototype = {
     // Use for drawing the arms!
     render: function () {
         // Hitboxes
-        // this.game.debug.body(p1);
-        // this.game.debug.body(p1.arm);
-        // this.game.debug.body(p2);
-        // this.game.debug.body(p2.arm);
+        this.game.debug.body(p1);
+        this.game.debug.body(p1.sword);
+        this.game.debug.body(p2);
+        this.game.debug.body(p2.sword);
 
         // Player 1 arm
         this.game.context.strokeStyle = '#75bfea';
         this.game.context.lineWidth = 8;
         this.game.context.beginPath();
         this.game.context.moveTo(p1.x, p1.y);
-        this.game.context.lineTo(p1.arm.x, p1.arm.y);
+        this.game.context.lineTo(p1.sword.x, p1.sword.y);
         this.game.context.stroke();
         this.game.context.closePath();
         // shoulder
@@ -159,7 +171,7 @@ play.prototype = {
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
         this.game.context.moveTo(p1.x, p1.y);
-        this.game.context.arc(p1.arm.x, p1.arm.y, 5, 2 * Math.PI, false);
+        this.game.context.arc(p1.sword.x, p1.sword.y, 5, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
 
@@ -169,7 +181,7 @@ play.prototype = {
         this.game.context.lineWidth = 10;
         this.game.context.beginPath();
         this.game.context.moveTo(p2.x, p2.y);
-        this.game.context.lineTo(p2.arm.x, p2.arm.y);
+        this.game.context.lineTo(p2.sword.x, p2.sword.y);
         this.game.context.stroke();
         this.game.context.closePath();
         // shoulder
@@ -183,7 +195,7 @@ play.prototype = {
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
         this.game.context.moveTo(p2.x, p2.y);
-        this.game.context.arc(p2.arm.x, p2.arm.y, 5, 2 * Math.PI, false);
+        this.game.context.arc(p2.sword.x, p2.sword.y, 5, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
     },
@@ -191,17 +203,17 @@ play.prototype = {
     // Handle inputs for the players
     handleInputs: function () {
         // p1 inputs
-        if (p1up.isDown && p1.arm.y > (p1.y - 30)) {
-            p1.arm.y -= 3;
-        } else if (p1down.isDown && p1.arm.y < (p1.y + 30)) {
-            p1.arm.y += 3;
+        if (p1up.isDown && p1.sword.y > (p1.y - 30)) {
+            p1.sword.y -= 3;
+        } else if (p1down.isDown && p1.sword.y < (p1.y + 30)) {
+            p1.sword.y += 3;
         }
 
         // p2 inputs
-        if (p2up.isDown && p2.arm.y > (p2.y - 30)) {
-            p2.arm.y -= 3;
-        } else if (p2down.isDown && p2.arm.y < (p2.y + 30)) {
-            p2.arm.y += 3;
+        if (p2up.isDown && p2.sword.y > (p2.y - 30)) {
+            p2.sword.y -= 3;
+        } else if (p2down.isDown && p2.sword.y < (p2.y + 30)) {
+            p2.sword.y += 3;
         }
     },
 
@@ -211,19 +223,47 @@ play.prototype = {
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
-        if (this.game.physics.arcade.overlap(p1.arm, p2.arm)) {
+        if (this.game.physics.arcade.overlap(p1.sword, p2.sword)) {
             console.log('clang');
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
 
-        if (this.game.physics.arcade.overlap(p1.arm, p2)) {
+        if (this.game.physics.arcade.overlap(p1.sword, p2)) {
             console.log('Player 1 wins!');
+            
+            // button = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-100, 'arm');
+            // this.game.add.existing(resetButton);
+            
+            // resetButton.onInputDown.add(function () {
+            //     console.log("hey");
+            //     this.game.state.start('Play');
+            // }, this);
+            this.game.add.existing(resetButton);
+            // this.game.state.start('Play');
+            // p1.body.acceleration = 0;
+            // p1.body.velocity = 0;
+            // p2.body.acceleration = 0;
+            // p2.body.velocity = 0;
             this.game.paused = true;
         }
-        if (this.game.physics.arcade.overlap(p2.arm, p1)) {
+        if (this.game.physics.arcade.overlap(p2.sword, p1)) {
             console.log('Player 2 wins!');
+            
+            this.game.add.existing(resetButton);
+            // this.game.state.start('Play');
+            // p1.body.acceleration = 0;
+            // p1.body.velocity = 0;
+            // p2.body.acceleration = 0;
+            // p2.body.velocity = 0;
+            // p1.paused = true;
+            // p2.paused = true;
             this.game.paused = true;
         }
+    },
+
+    restart: function () {
+        console.log('restart');
+        this.game.state.start(this.game.state.current);
     }
 }

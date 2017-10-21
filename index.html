@@ -9,6 +9,7 @@
 
         <!-- Loading javascript files -->
         <script src="phaser.min.js"></script>
+        <script src="js/menu.js"></script>
         <script src="js/play.js"></script>
         <script src="js/win.js"></script>
 
@@ -28,11 +29,14 @@
                 var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'gameDiv');
 
                 // Add states to the game
+                game.state.add('Menu', menu);
                 game.state.add('Play', play);
                 game.state.add('Win', win);
                 
-                // Start the play state
-                game.state.start('Play');
+                game.state.start('Menu');
+
+                // // Start the play state
+                // game.state.start('Play');
             }
         </script>
     </body>
