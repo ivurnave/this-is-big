@@ -9,6 +9,7 @@ var p1up, p1down, p1jab, p2up, p2down, p2jab;
 
 var pixelscale = 2;
 
+var gameIsPaused;
 var resetButton;
 
 // A player object
@@ -35,32 +36,36 @@ function Player (game, x, y, playerNum) {
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
-    // Update sword velocity
-    this.sword.body.velocity = this.body.velocity;
-    if (this.num === 1 && !this.jabDelay) {
-        this.sword.x = this.x+70;
-    } else if (this.num === 2 && !this.jabDelay) {
-        this.sword.x = this.x-70;
-    }
-    
-    // Handle jab delay
-    if (this.jabDelay) {
-        this.jabDelay--;
-        if (this.num === 1) {
-            this.sword.x--;
-        } else {
-            this.sword.x++;
+    if (!gameIsPaused) {
+        // Update sword velocity
+        this.sword.body.velocity = this.body.velocity;
+        if (this.num === 1 && !this.jabDelay) {
+            this.sword.x = this.x+70;
+        } else if (this.num === 2 && !this.jabDelay) {
+            this.sword.x = this.x-70;
+        }
+        
+        // Handle jab delay
+        if (this.jabDelay) {
+            this.jabDelay--;
+            if (this.num === 1) {
+                this.sword.x--;
+            } else {
+                this.sword.x++;
+            }
         }
     }
 }
 Player.prototype.jab = function () {
-    if (this.jabDelay > 0) {return;}
-    if (this.num === 1) {
-        this.sword.x += 60;
-    } else {
-        this.sword.x -= 60;
+    if (!gameIsPaused) {
+        if (this.jabDelay > 0) {return;}
+        if (this.num === 1) {
+            this.sword.x += 60;
+        } else {
+            this.sword.x -= 60;
+        }
+        this.jabDelay = 60;
     }
-    this.jabDelay = 60;
 }
 
 // An sword object, to be a child of the player object
@@ -81,7 +86,7 @@ play.prototype = {
         this.game.load.image('snail', 'images/snail.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
         this.game.load.image('sword', 'images/arm.png');
-        this.game.load.image('button', 'images/arm.png');
+        this.game.load.image('button', 'images/restart.png');
         this.game.stage.smoothed = false;
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
@@ -128,19 +133,18 @@ play.prototype = {
         p2jab.onDown.add(p2.jab, p2);
 
         // Create reset button
-        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-100, 'button', this.restart);
-        // this.game.add.existing(resetButton);
-        // resetButton = this.game.add.button(this.game, this.game.world.centerX, this.game.world.centerY-100, 'button',
-        //     function () {
-        //         console.log('hey');
-        //     });
-
+        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-200, 'button', this.restart);
+        resetButton.anchor.set(0.5, 0.5);
+        resetButton.scale.setTo(4, 4);
+        gameIsPaused = false;
     },
     
     // Called every frame of the game (I think 60 fps?)
     update: function () {
-        this.handleInputs();
-        this.handleCollisions();
+        if (!gameIsPaused) {
+            this.handleInputs();
+            this.handleCollisions();
+        } 
     },
     
     // Use this function to look at the hit-boxes
@@ -231,34 +235,29 @@ play.prototype = {
 
         if (this.game.physics.arcade.overlap(p1.sword, p2)) {
             console.log('Player 1 wins!');
-            
-            // button = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-100, 'arm');
-            // this.game.add.existing(resetButton);
-            
-            // resetButton.onInputDown.add(function () {
-            //     console.log("hey");
-            //     this.game.state.start('Play');
-            // }, this);
+ 
             this.game.add.existing(resetButton);
-            // this.game.state.start('Play');
-            // p1.body.acceleration = 0;
-            // p1.body.velocity = 0;
-            // p2.body.acceleration = 0;
-            // p2.body.velocity = 0;
-            this.game.paused = true;
+            p1.body.velocity = 0;
+            p1.body.acceleration = 0;
+            p1.sword.body.velocity = 0;
+            p2.body.velocity = 0;
+            p2.body.acceleration = 0;
+            p2.sword.body.velocity = 0;
+            gameIsPaused = true;
+            // this.game.paused = true;
         }
         if (this.game.physics.arcade.overlap(p2.sword, p1)) {
             console.log('Player 2 wins!');
             
             this.game.add.existing(resetButton);
-            // this.game.state.start('Play');
-            // p1.body.acceleration = 0;
-            // p1.body.velocity = 0;
-            // p2.body.acceleration = 0;
-            // p2.body.velocity = 0;
-            // p1.paused = true;
-            // p2.paused = true;
-            this.game.paused = true;
+            p1.body.velocity = 0;
+            p1.body.acceleration = 0;
+            p1.sword.body.velocity = 0;
+            p2.body.velocity = 0;
+            p2.body.acceleration = 0;
+            p2.sword.body.velocity = 0;
+            gameIsPaused = true;
+            // this.game.paused = true;
         }
     },
 
