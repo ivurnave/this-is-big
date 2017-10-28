@@ -2,12 +2,12 @@
 var play = function (game) {};
 
 // Global variables for play state
-var p1, p2, bounceback, jabDelay;
+var p1, p2, bounceback, jabDelay, crowdNoise;
 
 // Global input variables
 var p1up, p1down, p1jab, p2up, p2down, p2jab;
 
-var pixelscale = 2;
+var imageScale = .15;
 
 var gameIsPaused;
 var resetButton;
@@ -17,18 +17,21 @@ function Player (game, x, y, playerNum) {
     // instance variables
     this.num = playerNum;
     this.jabDelay = 0;
-    Phaser.Sprite.call(this, game, x, y, 'snail');
-    this.anchor.set(0.5, 0.5);
-    this.game.physics.enable(this); // set physics for player
-    if (playerNum === 1) {
-        this.sword = new Sword(this.game, this.x+70, this.y, this.playerNum);
-        this.game.add.existing(this.sword);
-        this.scale.setTo(-pixelscale, pixelscale);    
+    if (playerNum == 1) {
+        Phaser.Sprite.call(this, game, x, y, 'snail1');
+        this.anchor.set(0.5, 0.5);
+        this.game.physics.enable(this);
+        this.sword = new Sword(this.game, this.x+120, this.y, this.num);
+        this.game.add.existing(this.sword)
+        this.scale.setTo(imageScale, imageScale);    
         this.body.acceleration.setTo(40,0);
     } else {
-        this.sword = new Sword(this.game, this.x-70, this.y, this.playerNum);
+        Phaser.Sprite.call(this, game, x, y, 'snail2');
+        this.anchor.set(0.5, 0.5);
+        this.game.physics.enable(this);
+        this.sword = new Sword(this.game, this.x-120, this.y, this.num);
         this.game.add.existing(this.sword);
-        this.scale.setTo(pixelscale, pixelscale);
+        this.scale.setTo(imageScale, imageScale);
         this.body.acceleration.setTo(-40,0);
     }
 }
@@ -40,9 +43,9 @@ Player.prototype.update = function () {
         // Update sword velocity
         this.sword.body.velocity = this.body.velocity;
         if (this.num === 1 && !this.jabDelay) {
-            this.sword.x = this.x+70;
+            this.sword.x = this.x+120;
         } else if (this.num === 2 && !this.jabDelay) {
-            this.sword.x = this.x-70;
+            this.sword.x = this.x-120;
         }
         
         // Handle jab delay
@@ -68,11 +71,15 @@ Player.prototype.jab = function () {
     }
 }
 
-// An sword object, to be a child of the player object
+// A sword object, to be a child of the player object
 function Sword (game, x, y, playerNum) {
     Phaser.Sprite.call(this, game, x, y, 'sword');
     this.game.physics.enable(this); // enable physics for sword
-    this.anchor.setTo(.5,.5);
+    if (playerNum === 1) {
+        this.anchor.setTo(.1,.5);
+    } else {
+        this.anchor.setTo(.9,.5);
+    }
     this.scale.setTo(3,1.5);
 }
 Sword.prototype = Object.create(Phaser.Sprite.prototype);
@@ -80,14 +87,28 @@ Sword.prototype.constructor = Sword;
 
 
 play.prototype = {
+    init: function () {
+        this.game.renderer.renderSession.roundPixels = true;
+    },
+
     preload: function () {
         console.log("%cPlay state","color:white; background:blue");
         console.log('preload');
-        this.game.load.image('snail', 'images/snail.png');
+
+
+        // Load images
+        // this.game.load.image('snail', 'images/snail.png');
+        this.game.load.image('snail1', 'images/snail1.png');
+        this.game.load.image('snail1dead', 'images/snail1dead.png');
+        this.game.load.image('snail2', 'images/snail2.png');
+        this.game.load.image('snail2dead', 'images/snail2dead.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
         this.game.load.image('sword', 'images/arm.png');
         this.game.load.image('button', 'images/restart.png');
         this.game.stage.smoothed = false;
+
+        // Load sounds
+        this.game.load.audio('crowdNoise', 'sounds/crowdNoise.mp3');
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
         // Set some constants
@@ -137,10 +158,19 @@ play.prototype = {
         resetButton.anchor.set(0.5, 0.5);
         resetButton.scale.setTo(4, 4);
         gameIsPaused = false;
+
+        // Create sounds
+        // crowdNoise = new Phaser.Sound(this.game, 'crowdNoise', 1, true);
+        // crowdNoise.autoplay = true;
+        // this.game.add.existing(crowdNoise);
+        crowdNoise = this.game.sound.add('crowdNoise', 1, true);
+        // crowdNoise.fadeIn(500, true);
+        crowdNoise.play();
     },
     
     // Called every frame of the game (I think 60 fps?)
     update: function () {
+        // console.log(crowdNoise.volume);
         if (!gameIsPaused) {
             this.handleInputs();
             this.handleCollisions();
@@ -156,49 +186,49 @@ play.prototype = {
         this.game.debug.body(p2);
         this.game.debug.body(p2.sword);
 
+        var shoulderOffsetx = 70;
+        var shoulderOffsety = 20;
+
         // Player 1 arm
-        this.game.context.strokeStyle = '#75bfea';
+        // this.game.context.strokeStyle = '#75bfea';
+        this.game.context.strokeStyle = '#a35c44';
         this.game.context.lineWidth = 8;
         this.game.context.beginPath();
-        this.game.context.moveTo(p1.x, p1.y);
+        this.game.context.moveTo(p1.x + shoulderOffsetx, p1.y + shoulderOffsety);
         this.game.context.lineTo(p1.sword.x, p1.sword.y);
         this.game.context.stroke();
         this.game.context.closePath();
         // shoulder
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
-        this.game.context.moveTo(p1.x, p1.y);
-        this.game.context.arc(p1.x, p1.y, 10, 2 * Math.PI, false);
+        this.game.context.arc(p1.x + shoulderOffsetx, p1.y + shoulderOffsety, 10, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
         // hand
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
-        this.game.context.moveTo(p1.x, p1.y);
         this.game.context.arc(p1.sword.x, p1.sword.y, 5, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
 
 
         // Player 2 arm
-        this.game.context.strokeStyle = '#75bfea';
-        this.game.context.lineWidth = 10;
+        this.game.context.strokeStyle = '#a35c44';
+        this.game.context.lineWidth = 8;
         this.game.context.beginPath();
-        this.game.context.moveTo(p2.x, p2.y);
+        this.game.context.moveTo(p2.x - shoulderOffsetx, p2.y + shoulderOffsety);
         this.game.context.lineTo(p2.sword.x, p2.sword.y);
         this.game.context.stroke();
         this.game.context.closePath();
         // shoulder
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
-        this.game.context.moveTo(p2.x, p2.y);
-        this.game.context.arc(p2.x, p2.y, 10, 2 * Math.PI, false);
+        this.game.context.arc(p2.x - shoulderOffsetx, p2.y + shoulderOffsety, 10, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
         // hand
         this.game.context.fillStyle = '#a35c44';
         this.game.context.beginPath();
-        this.game.context.moveTo(p2.x, p2.y);
         this.game.context.arc(p2.sword.x, p2.sword.y, 5, 2 * Math.PI, false);
         this.game.context.fill();
         this.game.context.closePath();
@@ -233,20 +263,50 @@ play.prototype = {
             p2.body.velocity.x = bounceback;
         }
 
+        // Check if p1 wins
         if (this.game.physics.arcade.overlap(p1.sword, p2)) {
-            console.log('Player 1 wins!');
- 
-            this.game.add.existing(resetButton);
-            p1.body.velocity = 0;
-            p1.body.acceleration = 0;
-            p1.sword.body.velocity = 0;
-            p2.body.velocity = 0;
-            p2.body.acceleration = 0;
-            p2.sword.body.velocity = 0;
-            gameIsPaused = true;
-            // this.game.paused = true;
-        }
-        if (this.game.physics.arcade.overlap(p2.sword, p1)) {
+            // Check if tie
+            if (this.game.physics.arcade.overlap(p2.sword, p1)) {
+                console.log("Tie!");
+                this.game.add.existing(resetButton);
+                p1.body.velocity = 0;
+                p1.body.acceleration = 0;
+                p1.sword.body.velocity = 0;
+                p2.body.velocity = 0;
+                p2.body.acceleration = 0;
+                p2.sword.body.velocity = 0;
+
+                var snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
+                snail2dead.anchor.set(0.5, 0.5);
+                snail2dead.scale.setTo(imageScale, imageScale);
+
+                var snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
+                snail1dead.anchor.set(0.5, 0.5);
+                snail1dead.scale.setTo(imageScale, imageScale);
+
+                p1.destroy();
+                p2.destroy();
+
+                gameIsPaused = true;
+
+            } else { // p1 wins
+                console.log('Player 1 wins!');
+                this.game.add.existing(resetButton);
+                p1.body.velocity = 0;
+                p1.body.acceleration = 0;
+                p1.sword.body.velocity = 0;
+                p2.body.velocity = 0;
+                p2.body.acceleration = 0;
+                p2.sword.body.velocity = 0;
+    
+                // testing
+                var snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
+                snail2dead.anchor.set(0.5, 0.5);
+                snail2dead.scale.setTo(imageScale, imageScale);
+                p2.destroy();
+                gameIsPaused = true;
+            }
+        } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
             
             this.game.add.existing(resetButton);
@@ -256,8 +316,12 @@ play.prototype = {
             p2.body.velocity = 0;
             p2.body.acceleration = 0;
             p2.sword.body.velocity = 0;
+
+            var snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
+            snail1dead.anchor.set(0.5, 0.5);
+            snail1dead.scale.setTo(imageScale, imageScale);
+            p1.destroy();
             gameIsPaused = true;
-            // this.game.paused = true;
         }
     },
 
