@@ -73,14 +73,17 @@ Player.prototype.jab = function () {
 
 // A sword object, to be a child of the player object
 function Sword (game, x, y, playerNum) {
-    Phaser.Sprite.call(this, game, x, y, 'sword');
-    this.game.physics.enable(this); // enable physics for sword
     if (playerNum === 1) {
+        Phaser.Sprite.call(this, game, x, y, 'sword1');
+        this.game.physics.enable(this); // enable physics for sword
+        this.scale.setTo(imageScale*.75, imageScale);
         this.anchor.setTo(.1,.5);
     } else {
+        Phaser.Sprite.call(this, game, x, y, 'sword2');
+        this.game.physics.enable(this); // enable physics for sword
+        this.scale.setTo(imageScale*.75, imageScale);
         this.anchor.setTo(.9,.5);
     }
-    this.scale.setTo(3,1.5);
 }
 Sword.prototype = Object.create(Phaser.Sprite.prototype);
 Sword.prototype.constructor = Sword;
@@ -103,8 +106,11 @@ play.prototype = {
         this.game.load.image('snail2', 'images/snail2.png');
         this.game.load.image('snail2dead', 'images/snail2dead.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
-        this.game.load.image('sword', 'images/arm.png');
+        // this.game.load.image('sword', 'images/arm.png');
+        this.game.load.image('sword1', 'images/sword1.png');
+        this.game.load.image('sword2', 'images/sword2.png');
         this.game.load.image('button', 'images/restart.png');
+        this.game.load.image('paper-texture', 'images/paper-texture.jpg');
         this.game.stage.smoothed = false;
 
         // Load sounds
@@ -181,10 +187,10 @@ play.prototype = {
     // Use for drawing the arms!
     render: function () {
         // Hitboxes
-        this.game.debug.body(p1);
-        this.game.debug.body(p1.sword);
-        this.game.debug.body(p2);
-        this.game.debug.body(p2.sword);
+        // this.game.debug.body(p1);
+        // this.game.debug.body(p1.sword);
+        // this.game.debug.body(p2);
+        // this.game.debug.body(p2.sword);
 
         var shoulderOffsetx = 70;
         var shoulderOffsety = 20;
@@ -239,14 +245,14 @@ play.prototype = {
         // p1 inputs
         if (p1up.isDown && p1.sword.y > (p1.y - 30)) {
             p1.sword.y -= 3;
-        } else if (p1down.isDown && p1.sword.y < (p1.y + 30)) {
+        } else if (p1down.isDown && p1.sword.y < (p1.y + 50)) {
             p1.sword.y += 3;
         }
 
         // p2 inputs
         if (p2up.isDown && p2.sword.y > (p2.y - 30)) {
             p2.sword.y -= 3;
-        } else if (p2down.isDown && p2.sword.y < (p2.y + 30)) {
+        } else if (p2down.isDown && p2.sword.y < (p2.y + 50)) {
             p2.sword.y += 3;
         }
     },
