@@ -23,7 +23,7 @@ function Player (game, x, y, playerNum) {
         this.game.physics.enable(this);
         this.sword = new Sword(this.game, this.x+120, this.y, this.num);
         this.game.add.existing(this.sword)
-        this.scale.setTo(imageScale, imageScale);    
+        this.scale.setTo(imageScale, imageScale);
         this.body.acceleration.setTo(40,0);
     } else {
         Phaser.Sprite.call(this, game, x, y, 'snail2');
@@ -47,7 +47,7 @@ Player.prototype.update = function () {
         } else if (this.num === 2 && !this.jabDelay) {
             this.sword.x = this.x-120;
         }
-        
+
         // Handle jab delay
         if (this.jabDelay) {
             this.jabDelay--;
@@ -76,14 +76,15 @@ function Sword (game, x, y, playerNum) {
     if (playerNum === 1) {
         Phaser.Sprite.call(this, game, x, y, 'sword1');
         this.game.physics.enable(this); // enable physics for sword
-        this.scale.setTo(imageScale*.75, imageScale);
         this.anchor.setTo(.1,.5);
     } else {
         Phaser.Sprite.call(this, game, x, y, 'sword2');
         this.game.physics.enable(this); // enable physics for sword
-        this.scale.setTo(imageScale*.75, imageScale);
+        // this.scale.setTo(imageScale*.75, imageScale);
         this.anchor.setTo(.9,.5);
     }
+    this.body.setSize(1296, 100, 0, 48);
+    this.scale.setTo(imageScale*.75, imageScale);
 }
 Sword.prototype = Object.create(Phaser.Sprite.prototype);
 Sword.prototype.constructor = Sword;
@@ -109,7 +110,7 @@ play.prototype = {
         // this.game.load.image('sword', 'images/arm.png');
         this.game.load.image('sword1', 'images/sword1.png');
         this.game.load.image('sword2', 'images/sword2.png');
-        this.game.load.image('button', 'images/restart.png');
+        this.game.load.spritesheet('button', 'images/restart_button.png', 3333, 1250);
         this.game.load.image('paper-texture', 'images/paper-texture.jpg');
         this.game.stage.smoothed = false;
 
@@ -133,10 +134,10 @@ play.prototype = {
         this.game.stage.backgroundColor = '#e5d195';
 
     },
-    
+
     create: function () {
         console.log('create');
-        
+
         // start physics
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -149,7 +150,7 @@ play.prototype = {
         );
         this.game.add.existing(p1);
         p1jab.onDown.add(p1.jab, p1);
-        
+
         p2 = new Player(
             this.game,
             this.game.world.centerX+300,
@@ -160,9 +161,9 @@ play.prototype = {
         p2jab.onDown.add(p2.jab, p2);
 
         // Create reset button
-        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-200, 'button', this.restart);
+        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-200, 'button', this.restart, 0, 1, 0);
         resetButton.anchor.set(0.5, 0.5);
-        resetButton.scale.setTo(4, 4);
+        resetButton.scale.setTo(0.05, 0.05);
         gameIsPaused = false;
 
         // Create sounds
@@ -173,24 +174,24 @@ play.prototype = {
         // crowdNoise.fadeIn(500, true);
         crowdNoise.play();
     },
-    
+
     // Called every frame of the game (I think 60 fps?)
     update: function () {
         // console.log(crowdNoise.volume);
         if (!gameIsPaused) {
             this.handleInputs();
             this.handleCollisions();
-        } 
+        }
     },
-    
+
     // Use this function to look at the hit-boxes
     // Use for drawing the arms!
     render: function () {
         // Hitboxes
         // this.game.debug.body(p1);
-        // this.game.debug.body(p1.sword);
+        this.game.debug.body(p1.sword);
         // this.game.debug.body(p2);
-        // this.game.debug.body(p2.sword);
+        this.game.debug.body(p2.sword);
 
         var shoulderOffsetx = 70;
         var shoulderOffsety = 20;
@@ -304,7 +305,7 @@ play.prototype = {
                 p2.body.velocity = 0;
                 p2.body.acceleration = 0;
                 p2.sword.body.velocity = 0;
-    
+
                 // testing
                 var snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
                 snail2dead.anchor.set(0.5, 0.5);
@@ -314,7 +315,7 @@ play.prototype = {
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
-            
+
             this.game.add.existing(resetButton);
             p1.body.velocity = 0;
             p1.body.acceleration = 0;
