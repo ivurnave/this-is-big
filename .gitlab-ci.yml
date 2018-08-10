@@ -1,5 +1,7 @@
 # This file is a template, and might need editing before it works on your project.
 # Full project: https://gitlab.com/pages/plain-html
+# This file deploys a new build of the game on merges into master
+
 pages:
   stage: deploy
   script:

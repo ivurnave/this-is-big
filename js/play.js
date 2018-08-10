@@ -2,15 +2,15 @@
 var play = function (game) {};
 
 // Global variables for play state
-var p1, p2, bounceback, jabDelay, crowdNoise;
+var p1, p2, bounceback, jabDelay, crowdNoise, swordClang, soundTimer;
 
 // Global input variables
 var p1up, p1down, p1jab, p2up, p2down, p2jab;
 
 var imageScale = .15;
 
-var gameIsPaused;
-var resetButton;
+var gameIsPaused, gameOver;
+var resetButton, returnToMenuButton;
 
 // A player object
 function Player (game, x, y, playerNum) {
@@ -39,7 +39,7 @@ function Player (game, x, y, playerNum) {
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
-    if (!gameIsPaused) {
+    if (!gameIsPaused && !gameOver) {
         // Update sword velocity
         this.sword.body.velocity = this.body.velocity;
         if (this.num === 1 && !this.jabDelay) {
@@ -60,7 +60,7 @@ Player.prototype.update = function () {
     }
 }
 Player.prototype.jab = function () {
-    if (!gameIsPaused) {
+    if (!gameIsPaused && !gameOver) {
         if (this.jabDelay > 0) {return;}
         if (this.num === 1) {
             this.sword.x += 60;
@@ -116,6 +116,7 @@ play.prototype = {
 
         // Load sounds
         this.game.load.audio('crowdNoise', 'sounds/crowdNoise.mp3');
+        this.game.load.audio('swordClang', 'sounds/swordClang.wav');
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
         // Set some constants
@@ -161,26 +162,31 @@ play.prototype = {
         p2jab.onDown.add(p2.jab, p2);
 
         // Create reset button
-        resetButton = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY-200, 'button', this.restart, 0, 1, 0);
+        resetButton = new Phaser.Button (this.game, this.game.world.centerX-150, this.game.world.centerY+150, 'button', this.restart, 0, 1, 0);
         resetButton.anchor.set(0.5, 0.5);
         resetButton.scale.setTo(0.05, 0.05);
+        returnToMenuButton = new Phaser.Button (this.game, this.game.world.centerX+150, this.game.world.centerY+150, 'button', this.returnToMenu, 0, 1, 0);
+        returnToMenuButton.anchor.set(0.5, 0.5);
+        returnToMenuButton.scale.setTo(0.05, 0.05);
         gameIsPaused = false;
+        gameOver = false;
 
         // Create sounds
-        // crowdNoise = new Phaser.Sound(this.game, 'crowdNoise', 1, true);
-        // crowdNoise.autoplay = true;
-        // this.game.add.existing(crowdNoise);
         crowdNoise = this.game.sound.add('crowdNoise', 1, true);
-        // crowdNoise.fadeIn(500, true);
+        swordClang = this.game.sound.add('swordClang', 1, false);
+        soundTimer = 0;
         crowdNoise.play();
     },
 
     // Called every frame of the game (I think 60 fps?)
     update: function () {
-        // console.log(crowdNoise.volume);
-        if (!gameIsPaused) {
+        if (!gameIsPaused && !gameOver) {
+            soundTimer++;
             this.handleInputs();
             this.handleCollisions();
+        }
+        if (gameOver) {
+
         }
     },
 
@@ -265,7 +271,10 @@ play.prototype = {
             p2.body.velocity.x = bounceback;
         }
         if (this.game.physics.arcade.overlap(p1.sword, p2.sword)) {
-            console.log('clang');
+            if (soundTimer >= 50) {
+                this.game.sound.play('swordClang');
+                soundTimer = 0;
+            }
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
@@ -276,6 +285,7 @@ play.prototype = {
             if (this.game.physics.arcade.overlap(p2.sword, p1)) {
                 console.log("Tie!");
                 this.game.add.existing(resetButton);
+                this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
                 p1.body.acceleration = 0;
                 p1.sword.body.velocity = 0;
@@ -294,11 +304,12 @@ play.prototype = {
                 p1.destroy();
                 p2.destroy();
 
-                gameIsPaused = true;
+                gameOver = true;
 
             } else { // p1 wins
                 console.log('Player 1 wins!');
                 this.game.add.existing(resetButton);
+                this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
                 p1.body.acceleration = 0;
                 p1.sword.body.velocity = 0;
@@ -311,12 +322,13 @@ play.prototype = {
                 snail2dead.anchor.set(0.5, 0.5);
                 snail2dead.scale.setTo(imageScale, imageScale);
                 p2.destroy();
-                gameIsPaused = true;
+                gameOver = true;
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
 
             this.game.add.existing(resetButton);
+            this.game.add.existing(returnToMenuButton);
             p1.body.velocity = 0;
             p1.body.acceleration = 0;
             p1.sword.body.velocity = 0;
@@ -328,12 +340,17 @@ play.prototype = {
             snail1dead.anchor.set(0.5, 0.5);
             snail1dead.scale.setTo(imageScale, imageScale);
             p1.destroy();
-            gameIsPaused = true;
+            gameOver = true;
         }
     },
 
     restart: function () {
         console.log('restart');
         this.game.state.start(this.game.state.current);
+    },
+
+    returnToMenu: function () {
+        console.log('returning to main menu');
+        this.game.state.start('Menu');
     }
 }
