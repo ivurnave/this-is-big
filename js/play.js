@@ -2,7 +2,7 @@
 var play = function (game) {};
 
 // Global variables for play state
-var p1, p2, bounceback, jabDelay, crowdNoise, swordClang, soundTimer;
+var p1, p2, bounceback, jabDelay, crowdNoise, swordClang, soundTimer, resultText;
 
 // Global input variables
 var p1up, p1down, p1jab, p2up, p2down, p2jab;
@@ -195,9 +195,9 @@ play.prototype = {
     render: function () {
         // Hitboxes
         // this.game.debug.body(p1);
-        this.game.debug.body(p1.sword);
+        // this.game.debug.body(p1.sword);
         // this.game.debug.body(p2);
-        this.game.debug.body(p2.sword);
+        // this.game.debug.body(p2.sword);
 
         var shoulderOffsetx = 70;
         var shoulderOffsety = 20;
@@ -284,6 +284,8 @@ play.prototype = {
             // Check if tie
             if (this.game.physics.arcade.overlap(p2.sword, p1)) {
                 console.log("Tie!");
+                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 200, "Tie Game!");
+                resultText.anchor.set(0.5);
                 this.game.add.existing(resetButton);
                 this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
@@ -308,6 +310,8 @@ play.prototype = {
 
             } else { // p1 wins
                 console.log('Player 1 wins!');
+                resultText = this.game.add.text(p1.body.x, this.game.world.centerY - 200, "Player 1 wins!");
+                resultText.anchor.set(0.5);
                 this.game.add.existing(resetButton);
                 this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
@@ -326,6 +330,8 @@ play.prototype = {
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
+            resultText = this.game.add.text(p2.body.x, this.game.world.centerY - 200, "Player 2 wins!");
+            resultText.anchor.set(0.5);
 
             this.game.add.existing(resetButton);
             this.game.add.existing(returnToMenuButton);
