@@ -11,6 +11,7 @@ var imageScale = .15;
 
 var gameIsPaused, gameOver;
 var resetButton, returnToMenuButton;
+var backgroundColor = '#e3e0d5';
 
 // A player object
 function Player (game, x, y, playerNum) {
@@ -132,7 +133,7 @@ play.prototype = {
         p2jab = this.game.input.keyboard.addKey(Phaser.Keyboard.J);
 
         //set background
-        this.game.stage.backgroundColor = '#e5d195';
+        this.game.stage.backgroundColor = backgroundColor;
 
     },
 
