@@ -1,7 +1,6 @@
 var menu = function (game) {};
 
-var start;
-var background;
+var start, controls, background;
 
 menu.prototype = {
     preload: function () {
@@ -22,8 +21,17 @@ menu.prototype = {
         start.scale.setTo(0.05, 0.05);
         this.game.add.existing(start);
 
+        controls = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY+230, 'start', null, 0, 1, 0);
+        controls.anchor.set(0.5, 0.5);
+        controls.scale.setTo(0.05, 0.05);
+        this.game.add.existing(controls);
+
         start.onInputDown.add(function () {
             this.game.state.start('Play');
+        }, this)
+
+        controls.onInputDown.add(function () {
+            this.game.state.start('Controls');
         }, this)
     }
 };
