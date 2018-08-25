@@ -112,6 +112,7 @@ play.prototype = {
         this.game.load.image('sword1', 'images/sword1.png');
         this.game.load.image('sword2', 'images/sword2.png');
         this.game.load.spritesheet('button', 'images/restart_button.png', 3333, 1250);
+        this.game.load.spritesheet('menu', 'images/menu_button.png', 3331, 1249);
         this.game.load.image('paper-texture', 'images/paper-texture.jpg');
         this.game.stage.smoothed = false;
 
@@ -166,7 +167,7 @@ play.prototype = {
         resetButton = new Phaser.Button (this.game, this.game.world.centerX-150, this.game.world.centerY+150, 'button', this.restart, 0, 1, 0);
         resetButton.anchor.set(0.5, 0.5);
         resetButton.scale.setTo(0.05, 0.05);
-        returnToMenuButton = new Phaser.Button (this.game, this.game.world.centerX+150, this.game.world.centerY+150, 'button', this.returnToMenu, 0, 1, 0);
+        returnToMenuButton = new Phaser.Button (this.game, this.game.world.centerX+150, this.game.world.centerY+150, 'menu', this.returnToMenu, 0, 1, 0);
         returnToMenuButton.anchor.set(0.5, 0.5);
         returnToMenuButton.scale.setTo(0.05, 0.05);
         gameIsPaused = false;

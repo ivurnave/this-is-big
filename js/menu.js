@@ -6,6 +6,7 @@ menu.prototype = {
     preload: function () {
         // load any button assets
         this.game.load.spritesheet('start', 'images/begin_button.png', 3331, 1249);
+        this.game.load.spritesheet('controls', 'images/controls_button.png', 3331, 1249);
         this.game.load.image('background', 'images/main_menu.png');
         this.game.stage.smoothed = false;
     },
@@ -21,7 +22,7 @@ menu.prototype = {
         start.scale.setTo(0.05, 0.05);
         this.game.add.existing(start);
 
-        controls = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY+230, 'start', null, 0, 1, 0);
+        controls = new Phaser.Button (this.game, this.game.world.centerX, this.game.world.centerY+230, 'controls', null, 0, 1, 0);
         controls.anchor.set(0.5, 0.5);
         controls.scale.setTo(0.05, 0.05);
         this.game.add.existing(controls);
