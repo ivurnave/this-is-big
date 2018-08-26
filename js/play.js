@@ -2,7 +2,10 @@
 var play = function (game) {};
 
 // Global variables for play state
-var p1, p2, bounceback, jabDelay, crowdNoise, swordClang, soundTimer, resultText;
+var p1, p2, bounceback, jabDelay, soundTimer, resultText;
+
+// Sounds
+var crowdNoise;
 
 // Global input variables
 var p1up, p1down, p1jab, p2up, p2down, p2jab;
@@ -18,6 +21,7 @@ function Player (game, x, y, playerNum) {
     // instance variables
     this.num = playerNum;
     this.jabDelay = 0;
+
     if (playerNum == 1) {
         Phaser.Sprite.call(this, game, x, y, 'snail1');
         this.anchor.set(0.5, 0.5);
@@ -63,6 +67,7 @@ Player.prototype.update = function () {
 Player.prototype.jab = function () {
     if (!gameIsPaused && !gameOver) {
         if (this.jabDelay > 0) {return;}
+        this.game.sound.play('jabSound');
         if (this.num === 1) {
             this.sword.x += 60;
         } else {
@@ -102,13 +107,11 @@ play.prototype = {
 
 
         // Load images
-        // this.game.load.image('snail', 'images/snail.png');
         this.game.load.image('snail1', 'images/snail1.png');
         this.game.load.image('snail1dead', 'images/snail1dead.png');
         this.game.load.image('snail2', 'images/snail2.png');
         this.game.load.image('snail2dead', 'images/snail2dead.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
-        // this.game.load.image('sword', 'images/arm.png');
         this.game.load.image('sword1', 'images/sword1.png');
         this.game.load.image('sword2', 'images/sword2.png');
         this.game.load.spritesheet('button', 'images/restart_button.png', 3333, 1250);
@@ -119,6 +122,7 @@ play.prototype = {
         // Load sounds
         this.game.load.audio('crowdNoise', 'sounds/crowdNoise.mp3');
         this.game.load.audio('swordClang', 'sounds/swordClang.wav');
+        this.game.load.audio('jabSound', 'sounds/swipe.mp3');
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
         // Set some constants
@@ -175,7 +179,8 @@ play.prototype = {
 
         // Create sounds
         crowdNoise = this.game.sound.add('crowdNoise', 1, true);
-        swordClang = this.game.sound.add('swordClang', 1, false);
+        // swordClang = this.game.sound.add('swordClang', 1, false);
+        // jabSound = this.game.sound.add('jabSound', 1, false);
         soundTimer = 0;
         crowdNoise.play();
     },
@@ -273,7 +278,7 @@ play.prototype = {
             p2.body.velocity.x = bounceback;
         }
         if (this.game.physics.arcade.overlap(p1.sword, p2.sword)) {
-            if (soundTimer >= 50) {
+            if (soundTimer >= 20) {
                 this.game.sound.play('swordClang');
                 soundTimer = 0;
             }
