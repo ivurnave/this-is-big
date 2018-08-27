@@ -121,6 +121,9 @@ play.prototype = {
         this.game.load.image('sword2', 'images/sword2.png');
         this.game.load.spritesheet('button', 'images/restart_button.png', 3333, 1250);
         this.game.load.spritesheet('menu', 'images/menu_button.png', 3331, 1249);
+        this.game.load.image('player_one_win_text', 'images/player_one_win_text.png');
+        this.game.load.image('player_two_win_text', 'images/player_two_win_text.png');
+        this.game.load.image('tie_text', 'images/tie_text.png');
         this.game.load.image('paper-texture', 'images/paper-texture.jpg');
         this.game.stage.smoothed = false;
 
@@ -299,7 +302,7 @@ play.prototype = {
             // Check if tie
             if (this.game.physics.arcade.overlap(p2.sword, p1)) {
                 console.log("Tie!");
-                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Tie Game!");
+                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'tie_text');
                 resultText.anchor.set(0.5);
                 this.game.sound.play(getRandomGrunt(gruntNoises));
                 this.game.add.existing(resetButton);
@@ -326,7 +329,7 @@ play.prototype = {
 
             } else { // p1 wins
                 console.log('Player 1 wins!');
-                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Player 1 wins!");
+                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_one_win_text');
                 resultText.anchor.set(0.5);
                 this.game.sound.play(getRandomGrunt(gruntNoises));
                 this.game.add.existing(resetButton);
@@ -347,7 +350,7 @@ play.prototype = {
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
-            resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Player 2 wins!");
+            resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_two_win_text');
             resultText.anchor.set(0.5);
             this.game.sound.play(getRandomGrunt(gruntNoises));
             this.game.add.existing(resetButton);
@@ -369,11 +372,13 @@ play.prototype = {
 
     restart: function () {
         console.log('restart');
+        crowdNoise.stop();
         this.game.state.start(this.game.state.current);
     },
 
     returnToMenu: function () {
         console.log('returning to main menu');
+        crowdNoise.stop();
         this.game.state.start('Menu');
     }
 }
