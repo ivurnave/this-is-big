@@ -5,7 +5,7 @@ var play = function (game) {};
 var p1, p2, bounceback, jabDelay, soundTimer, resultText;
 
 // Sounds
-var crowdNoise;
+var crowdNoise, gruntNoises = ['grunt1', 'grunt2', 'grunt3'];
 
 // Global input variables
 var p1up, p1down, p1jab, p2up, p2down, p2jab;
@@ -15,6 +15,11 @@ var imageScale = .15;
 var gameIsPaused, gameOver;
 var resetButton, returnToMenuButton;
 var backgroundColor = '#e3e0d5';
+
+// Get random noise key from array of grunt sound keys
+function getRandomGrunt(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
 
 // A player object
 function Player (game, x, y, playerNum) {
@@ -123,6 +128,9 @@ play.prototype = {
         this.game.load.audio('crowdNoise', 'sounds/crowdNoise.mp3');
         this.game.load.audio('swordClang', 'sounds/swordClang.wav');
         this.game.load.audio('jabSound', 'sounds/swipe.mp3');
+        this.game.load.audio('grunt1', 'sounds/grunt1.wav');
+        this.game.load.audio('grunt2', 'sounds/grunt2.wav');
+        this.game.load.audio('grunt3', 'sounds/grunt3.wav');
         // game.load.audio('kiss', 'sounds/kiss.wav');
 
         // Set some constants
@@ -291,8 +299,9 @@ play.prototype = {
             // Check if tie
             if (this.game.physics.arcade.overlap(p2.sword, p1)) {
                 console.log("Tie!");
-                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 200, "Tie Game!");
+                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Tie Game!");
                 resultText.anchor.set(0.5);
+                this.game.sound.play(getRandomGrunt(gruntNoises));
                 this.game.add.existing(resetButton);
                 this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
@@ -317,8 +326,9 @@ play.prototype = {
 
             } else { // p1 wins
                 console.log('Player 1 wins!');
-                resultText = this.game.add.text(p1.body.x, this.game.world.centerY - 200, "Player 1 wins!");
+                resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Player 1 wins!");
                 resultText.anchor.set(0.5);
+                this.game.sound.play(getRandomGrunt(gruntNoises));
                 this.game.add.existing(resetButton);
                 this.game.add.existing(returnToMenuButton);
                 p1.body.velocity = 0;
@@ -337,9 +347,9 @@ play.prototype = {
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
-            resultText = this.game.add.text(p2.body.x, this.game.world.centerY - 200, "Player 2 wins!");
+            resultText = this.game.add.text(this.game.world.centerX, this.game.world.centerY - 130, "Player 2 wins!");
             resultText.anchor.set(0.5);
-
+            this.game.sound.play(getRandomGrunt(gruntNoises));
             this.game.add.existing(resetButton);
             this.game.add.existing(returnToMenuButton);
             p1.body.velocity = 0;
