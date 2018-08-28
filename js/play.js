@@ -12,7 +12,7 @@ var p1up, p1down, p1jab, p2up, p2down, p2jab;
 
 var imageScale = .15;
 
-var gameIsPaused, gameOver;
+var gameIsPaused, gameIsOver;
 var resetButton, returnToMenuButton;
 var backgroundColor = '#e3e0d5';
 
@@ -49,7 +49,7 @@ function Player (game, x, y, playerNum) {
 Player.prototype = Object.create(Phaser.Sprite.prototype);
 Player.prototype.constructor = Player;
 Player.prototype.update = function () {
-    if (!gameIsPaused && !gameOver) {
+    if (!gameIsPaused && !gameIsOver) {
         // Update sword velocity
         this.sword.body.velocity = this.body.velocity;
         if (this.num === 1 && !this.jabDelay) {
@@ -70,7 +70,7 @@ Player.prototype.update = function () {
     }
 }
 Player.prototype.jab = function () {
-    if (!gameIsPaused && !gameOver) {
+    if (!gameIsPaused && !gameIsOver) {
         if (this.jabDelay > 0) {return;}
         this.game.sound.play('jabSound');
         if (this.num === 1) {
@@ -186,7 +186,7 @@ play.prototype = {
         returnToMenuButton.anchor.set(0.5, 0.5);
         returnToMenuButton.scale.setTo(0.05, 0.05);
         gameIsPaused = false;
-        gameOver = false;
+        gameIsOver = false;
 
         // Create sounds
         crowdNoise = this.game.sound.add('crowdNoise', 1, true);
@@ -198,12 +198,12 @@ play.prototype = {
 
     // Called every frame of the game (I think 60 fps?)
     update: function () {
-        if (!gameIsPaused && !gameOver) {
+        if (!gameIsPaused && !gameIsOver) {
             soundTimer++;
             this.handleInputs();
             this.handleCollisions();
         }
-        if (gameOver) {
+        if (gameIsOver) {
 
         }
     },
@@ -325,7 +325,7 @@ play.prototype = {
                 p1.destroy();
                 p2.destroy();
 
-                gameOver = true;
+                gameIsOver = true;
 
             } else { // p1 wins
                 console.log('Player 1 wins!');
@@ -346,7 +346,7 @@ play.prototype = {
                 snail2dead.anchor.set(0.5, 0.5);
                 snail2dead.scale.setTo(imageScale, imageScale);
                 p2.destroy();
-                gameOver = true;
+                gameIsOver = true;
             }
         } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
             console.log('Player 2 wins!');
@@ -366,7 +366,7 @@ play.prototype = {
             snail1dead.anchor.set(0.5, 0.5);
             snail1dead.scale.setTo(imageScale, imageScale);
             p1.destroy();
-            gameOver = true;
+            gameIsOver = true;
         }
     },
 
@@ -380,5 +380,45 @@ play.prototype = {
         console.log('returning to main menu');
         crowdNoise.stop();
         this.game.state.start('Menu');
+    },
+
+    gameOver: function (winner) {
+        var resultText, snail1dead, snail2dead;
+        switch(winner) {
+            case 'p1':
+                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_one_win_text');
+                snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
+                snail2dead.anchor.set(0.5, 0.5);
+                snail2dead.scale.setTo(imageScale, imageScale);
+                break;
+            case 'p2':
+                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_two_win_text');
+                snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
+                snail1dead.anchor.set(0.5, 0.5);
+                snail1dead.scale.setTo(imageScale, imageScale);
+                break;
+            case 'tie':
+                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'tie_text');
+                snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
+                snail2dead.anchor.set(0.5, 0.5);
+                snail2dead.scale.setTo(imageScale, imageScale);
+                snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
+                snail1dead.anchor.set(0.5, 0.5);
+                snail1dead.scale.setTo(imageScale, imageScale);
+                break;
+        }
+        resultText.anchor.set(0.5);
+        this.game.sound.play(getRandomGrunt(gruntNoises));
+        this.game.add.existing(resetButton);
+        this.game.add.existing(returnToMenuButton);
+        p1.body.velocity = 0;
+        p1.body.acceleration = 0;
+        p1.sword.body.velocity = 0;
+        p2.body.velocity = 0;
+        p2.body.acceleration = 0;
+        p2.sword.body.velocity = 0;
+        p1.destroy();
+        p2.destroy();
+        gameIsOver = true;
     }
 }
