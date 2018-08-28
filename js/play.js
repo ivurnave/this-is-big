@@ -288,6 +288,8 @@ play.prototype = {
             p1.body.velocity.x = -bounceback;
             p2.body.velocity.x = bounceback;
         }
+
+        // Clang
         if (this.game.physics.arcade.overlap(p1.sword, p2.sword)) {
             if (soundTimer >= 20) {
                 this.game.sound.play('swordClang');
@@ -297,76 +299,15 @@ play.prototype = {
             p2.body.velocity.x = bounceback;
         }
 
-        // Check if p1 wins
+        // Game over
         if (this.game.physics.arcade.overlap(p1.sword, p2)) {
-            // Check if tie
             if (this.game.physics.arcade.overlap(p2.sword, p1)) {
-                console.log("Tie!");
-                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'tie_text');
-                resultText.anchor.set(0.5);
-                this.game.sound.play(getRandomGrunt(gruntNoises));
-                this.game.add.existing(resetButton);
-                this.game.add.existing(returnToMenuButton);
-                p1.body.velocity = 0;
-                p1.body.acceleration = 0;
-                p1.sword.body.velocity = 0;
-                p2.body.velocity = 0;
-                p2.body.acceleration = 0;
-                p2.sword.body.velocity = 0;
-
-                var snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
-                snail2dead.anchor.set(0.5, 0.5);
-                snail2dead.scale.setTo(imageScale, imageScale);
-
-                var snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
-                snail1dead.anchor.set(0.5, 0.5);
-                snail1dead.scale.setTo(imageScale, imageScale);
-
-                p1.destroy();
-                p2.destroy();
-
-                gameIsOver = true;
-
-            } else { // p1 wins
-                console.log('Player 1 wins!');
-                resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_one_win_text');
-                resultText.anchor.set(0.5);
-                this.game.sound.play(getRandomGrunt(gruntNoises));
-                this.game.add.existing(resetButton);
-                this.game.add.existing(returnToMenuButton);
-                p1.body.velocity = 0;
-                p1.body.acceleration = 0;
-                p1.sword.body.velocity = 0;
-                p2.body.velocity = 0;
-                p2.body.acceleration = 0;
-                p2.sword.body.velocity = 0;
-
-                // testing
-                var snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
-                snail2dead.anchor.set(0.5, 0.5);
-                snail2dead.scale.setTo(imageScale, imageScale);
-                p2.destroy();
-                gameIsOver = true;
+                this.gameOver('tie');
+            } else {
+                this.gameOver('p1');
             }
-        } else if (this.game.physics.arcade.overlap(p2.sword, p1)) { // p2 wins
-            console.log('Player 2 wins!');
-            resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_two_win_text');
-            resultText.anchor.set(0.5);
-            this.game.sound.play(getRandomGrunt(gruntNoises));
-            this.game.add.existing(resetButton);
-            this.game.add.existing(returnToMenuButton);
-            p1.body.velocity = 0;
-            p1.body.acceleration = 0;
-            p1.sword.body.velocity = 0;
-            p2.body.velocity = 0;
-            p2.body.acceleration = 0;
-            p2.sword.body.velocity = 0;
-
-            var snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
-            snail1dead.anchor.set(0.5, 0.5);
-            snail1dead.scale.setTo(imageScale, imageScale);
-            p1.destroy();
-            gameIsOver = true;
+        } else if (this.game.physics.arcade.overlap(p2.sword, p1)) {
+            this.gameOver('p2');
         }
     },
 
@@ -384,18 +325,26 @@ play.prototype = {
 
     gameOver: function (winner) {
         var resultText, snail1dead, snail2dead;
+        p1.body.velocity = 0;
+        p1.body.acceleration = 0;
+        p1.sword.body.velocity = 0;
+        p2.body.velocity = 0;
+        p2.body.acceleration = 0;
+        p2.sword.body.velocity = 0;
         switch(winner) {
             case 'p1':
                 resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_one_win_text');
                 snail2dead = this.game.add.sprite(p2.x, p2.y, 'snail2dead');
                 snail2dead.anchor.set(0.5, 0.5);
                 snail2dead.scale.setTo(imageScale, imageScale);
+                p2.destroy();
                 break;
             case 'p2':
                 resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_two_win_text');
                 snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
                 snail1dead.anchor.set(0.5, 0.5);
                 snail1dead.scale.setTo(imageScale, imageScale);
+                p1.destroy();
                 break;
             case 'tie':
                 resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'tie_text');
@@ -405,20 +354,14 @@ play.prototype = {
                 snail1dead = this.game.add.sprite(p1.x, p1.y, 'snail1dead');
                 snail1dead.anchor.set(0.5, 0.5);
                 snail1dead.scale.setTo(imageScale, imageScale);
+                p1.destroy();
+                p2.destroy();
                 break;
         }
         resultText.anchor.set(0.5);
         this.game.sound.play(getRandomGrunt(gruntNoises));
         this.game.add.existing(resetButton);
         this.game.add.existing(returnToMenuButton);
-        p1.body.velocity = 0;
-        p1.body.acceleration = 0;
-        p1.sword.body.velocity = 0;
-        p2.body.velocity = 0;
-        p2.body.acceleration = 0;
-        p2.sword.body.velocity = 0;
-        p1.destroy();
-        p2.destroy();
         gameIsOver = true;
     }
 }
