@@ -8,7 +8,7 @@ var p1, p2, bounceback, jabDelay, soundTimer, resultText;
 var crowdNoise, gruntNoises = ['grunt1', 'grunt2', 'grunt3'];
 
 // Global input variables
-var p1up, p1down, p1jab, p2up, p2down, p2jab;
+var p1up, p1down, p1jab, p2up, p2down, p2jab, pauseButton;
 
 var imageScale = .15;
 
@@ -107,13 +107,14 @@ play.prototype = {
     },
 
     preload: function () {
-        console.log("%cPlay state","color:white; background:blue");
-        console.log('preload');
+        // console.log("%cPlay state","color:white; background:blue");
+        // console.log('preload');
 
 
         // Load images
         this.game.load.image('snail1', 'images/snail1.png');
         this.game.load.image('snail1dead', 'images/snail1dead.png');
+        // this.game.load.image('snail1dead', 'images/snail1dead_copy.png');
         this.game.load.image('snail2', 'images/snail2.png');
         this.game.load.image('snail2dead', 'images/snail2dead.png');
         this.game.load.spritesheet('tiles','images/platformertiles.png',16,16);
@@ -147,6 +148,7 @@ play.prototype = {
         p2up = this.game.input.keyboard.addKey(Phaser.Keyboard.I);
         p2down = this.game.input.keyboard.addKey(Phaser.Keyboard.K);
         p2jab = this.game.input.keyboard.addKey(Phaser.Keyboard.J);
+        pauseButton = this.game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 
         //set background
         this.game.stage.backgroundColor = backgroundColor;
@@ -154,7 +156,7 @@ play.prototype = {
     },
 
     create: function () {
-        console.log('create');
+        // console.log('create');
 
         // start physics
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -190,21 +192,29 @@ play.prototype = {
 
         // Create sounds
         crowdNoise = this.game.sound.add('crowdNoise', 1, true);
-        // swordClang = this.game.sound.add('swordClang', 1, false);
-        // jabSound = this.game.sound.add('jabSound', 1, false);
+        crowdNoise.volume = 0.2;
         soundTimer = 0;
         crowdNoise.play();
     },
 
     // Called every frame of the game (I think 60 fps?)
     update: function () {
+        if (gameIsOver) {
+
+        }
+        if (gameIsPaused && pauseButton.justDown) {
+            // gameIsPaused = false;
+            // this.game.physics.arcade.isPaused = false;
+        }
         if (!gameIsPaused && !gameIsOver) {
             soundTimer++;
             this.handleInputs();
             this.handleCollisions();
-        }
-        if (gameIsOver) {
-
+            // if (pauseButton.justDown) {
+            //     gameIsPaused = true;
+            //     this.game.physics.arcade.isPaused = true;
+            //     // console.log('pause the game!');
+            // }
         }
     },
 
@@ -312,25 +322,20 @@ play.prototype = {
     },
 
     restart: function () {
-        console.log('restart');
+        // console.log('restart');
         crowdNoise.stop();
         this.game.state.start(this.game.state.current);
     },
 
     returnToMenu: function () {
-        console.log('returning to main menu');
+        // console.log('returning to main menu');
         crowdNoise.stop();
         this.game.state.start('Menu');
     },
 
     gameOver: function (winner) {
         var resultText, snail1dead, snail2dead;
-        p1.body.velocity = 0;
-        p1.body.acceleration = 0;
-        p1.sword.body.velocity = 0;
-        p2.body.velocity = 0;
-        p2.body.acceleration = 0;
-        p2.sword.body.velocity = 0;
+        this.game.physics.arcade.isPaused = true;
         switch(winner) {
             case 'p1':
                 resultText = this.game.add.image(this.game.world.centerX, this.game.world.centerY-130, 'player_one_win_text');

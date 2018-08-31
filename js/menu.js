@@ -1,6 +1,6 @@
 var menu = function (game) {};
 
-var start, controls, background, backgroundColor = '#e3e0d5';;
+var start, controls, background, menuMusic, backgroundColor = '#e3e0d5';
 
 menu.prototype = {
     preload: function () {
@@ -8,11 +8,16 @@ menu.prototype = {
         this.game.load.spritesheet('start', 'images/begin_button.png', 3331, 1249);
         this.game.load.spritesheet('controls', 'images/controls_button.png', 3331, 1249);
         this.game.load.image('title', 'images/title_text.png');
+        this.game.load.audio('menuMusic', 'sounds/Snail_Jousting_Main_Theme.mp3');
         this.game.stage.smoothed = false;
     },
 
     create: function () {
         this.game.stage.backgroundColor = backgroundColor;
+        if (!menuMusic) {
+            menuMusic = this.game.sound.add('menuMusic', 1, true);
+            menuMusic.play();
+        }
 
         title = this.game.add.image(this.game.world.centerX, this.game.world.centerY-20, 'title');
         title.anchor.set(0.5, 0.5);
